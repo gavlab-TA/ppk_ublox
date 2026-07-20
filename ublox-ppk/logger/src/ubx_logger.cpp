@@ -355,6 +355,8 @@ int main(int argc, char** argv) {
                     secs, (unsigned long long)scan.rawx, (unsigned long long)scan.sfrbx,
                     (unsigned long long)scan.bad, total_bytes / 1024.0);
             std::fflush(stderr);
+            std::fflush(fout);
+            fsync(fileno(fout));
 
             // Bytes still arriving but RAWX frozen => the receiver is dropping it.
             if (!stall_warned && scan.rawx > 0 && stalled >= 5.0 && total_bytes > last_bytes) {
