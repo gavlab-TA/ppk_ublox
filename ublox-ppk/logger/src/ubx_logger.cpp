@@ -27,6 +27,7 @@
 #include <cerrno>
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include <fcntl.h>
 #include <termios.h>
@@ -216,10 +217,19 @@ struct UbxScanner {
     }
 };
 
+std::string getTimeStamp() {
+    std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm tm{};
+    localtime_r(&t, &tm);
+
+    char buff[32];
+    std::strftime(buff, sizeof(buff), "%Y%m%d_%H%M%S", &tm);
+    return std::string(buff);
+}
 // ------------------------------ CLI ------------------------------------------
 struct Args {
     std::string port = "/dev/ttyACM0";
-    std::string out  = "rover.ubx";
+    std::string out  = "rover";
     int baud = 115200;
     int rate_hz = 5;             // measurement rate (Hz)
     int duration_s = 0;          // 0 = until Ctrl+C
@@ -258,6 +268,7 @@ int main(int argc, char** argv) {
 
     std::signal(SIGINT,  on_sigint);
     std::signal(SIGTERM, on_sigint);
+    a.out = a.out + getTimeStamp() + ".ubx";
 
     int fd = open_serial(a.port, a.baud);
     if (fd < 0) return 1;
